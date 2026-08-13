@@ -1,0 +1,10 @@
+npm install
+npx expo prebuild
+npx expo run:android
+
+
+
+1. Genera /node_modules: npm install 
+2. Genera /android: npx expo prebuild
+3. Corre el proyecto: npx expo run:android
+                ('npm run start' de package.json puede fallar)

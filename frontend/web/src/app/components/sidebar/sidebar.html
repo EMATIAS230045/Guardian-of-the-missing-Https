@@ -1,0 +1,27 @@
+<div class="rounded-xl w-70 min-h-250 mr-5 shadow-[0_0px_30px_0px_rgba(61,166,147,0.4)]">
+    <div class="flex flex-col text-stone-900 h-full items-center gap-y-10">
+        <div class="w-75 h-75 mt-7 -mb-10 bg-[url('/logo_mini.png')] bg-contain bg-center bg-no-repeat"></div>
+        <div class="flex flex-col w-full h-full items-start px-7 gap-y-5">
+            <button class="flex font-semibold w-full text-md px-10 py-3 cursor-pointer rounded-full text-start hover:text-[#1f594f] transition-all duration-200" (click)="dashboard()" 
+            [ngClass]="router.url === '/home/dashboard' ? 'shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] bg-[#e0fff9]' : ''">
+                <div class="mr-4 w-6 h-6 bg-[url('/home.png')] bg-contain bg-center bg-no-repeat"></div>Inicio</button>
+            <button class="flex font-semibold w-full text-md px-10 py-3 cursor-pointer rounded-full text-start hover:text-[#1f594f] transition-all duration-200" (click)="geofences()"
+            [ngClass]="router.url === '/home/geofences' ? 'shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] bg-[#e0fff9]' : ''">
+                <div class="mr-4 w-6 h-6 bg-[url('/location.png')] bg-contain bg-center bg-no-repeat"></div>Geocercas</button>
+            <button class="flex font-semibold w-full text-md px-10 py-3 cursor-pointer rounded-full text-start hover:text-[#1f594f] transition-all duration-200" (click)="historial()"
+            [ngClass]="router.url === '/home/historial' ? 'shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] bg-[#e0fff9]' : ''">
+                <div class="mr-4 w-6 h-6 bg-[url('/historial.png')] bg-contain bg-center bg-no-repeat"></div>Historial</button>
+            <button class="flex font-semibold w-full text-md px-10 py-3 cursor-pointer rounded-full text-start hover:text-[#1f594f] transition-all duration-200" (click)="contacts()"
+            [ngClass]="router.url === '/home/contacts' ? 'shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] bg-[#e0fff9]' : ''">
+                <div class="mr-4 w-6 h-6 bg-[url('/contact-book.png')] bg-contain bg-center bg-no-repeat"></div>Contactos</button>
+            <button class="flex font-semibold w-full text-md px-10 py-3 cursor-pointer rounded-full text-start hover:text-[#1f594f] transition-all duration-200" (click)="groups()"
+            [ngClass]="router.url === '/home/groups' ? 'shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] bg-[#e0fff9]' : ''">
+                <div class="mr-4 w-6 h-6 bg-[url('/groups.png')] bg-contain bg-center bg-no-repeat"></div>Grupos</button>
+            <button class="flex font-semibold w-full text-md px-10 py-3 cursor-pointer rounded-full text-start hover:text-[#1f594f] transition-all duration-200" (click)="users()"
+            [ngClass]="router.url === '/home/users' ? 'shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] bg-[#e0fff9]' : ''" [class.hidden]="usuarioActual?.role !== 'admin'">
+                <div class="mr-4 w-6 h-6 bg-[url('/users.png')] bg-contain bg-center bg-no-repeat"></div>Usuarios</button>
+            <button class="flex font-semibold w-full text-md px-10 py-3 cursor-pointer rounded-full text-start hover:text-[#1f594f] transition-all duration-200 mt-auto" (click)="cerrarSesion()">
+                <div class="mr-4 w-6 h-6 bg-[url('/logout.png')] bg-contain bg-center bg-no-repeat"></div>Cerrar sesión</button>
+        </div>
+    </div>
+</div>

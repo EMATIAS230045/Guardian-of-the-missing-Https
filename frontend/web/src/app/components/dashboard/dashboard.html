@@ -1,0 +1,99 @@
+<div class="flex rounded-xl justify-between h-full mb-5 shadow-[0_0px_30px_0px_rgba(61,166,147,0.4)] relative">
+
+    <!-- ALERTA EN VIVO UI -->
+    <div *ngIf="activeAlert" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-2xl bg-red-600 rounded-2xl shadow-2xl overflow-hidden animate-pulse border-4 border-red-800">
+        <div class="p-6 text-white flex flex-col items-center">
+            <h2 class="text-3xl font-black mb-2 uppercase tracking-widest text-center">¡ALERTA DE PÁNICO EN VIVO!</h2>
+            
+            <div class="bg-red-900/50 rounded-xl p-4 w-full mt-4 flex flex-col gap-2">
+                <p class="text-lg"><strong>Nivel de Riesgo:</strong> {{ activeAlert.nivel_riesgo | uppercase }}</p>
+                <p class="text-lg"><strong>Comentario:</strong> {{ activeAlert.comentario }}</p>
+                
+                <div class="mt-4 bg-white/10 p-3 rounded-lg border border-red-400">
+                    <p class="text-sm uppercase font-bold text-red-200 mb-1">Ubicación aproximada (GPS):</p>
+                    <p class="text-xl font-medium leading-tight">{{ alertAddress }}</p>
+                </div>
+            </div>
+
+            <button (click)="closeAlert()" class="mt-6 bg-white text-red-700 px-8 py-3 rounded-xl font-bold text-lg shadow-lg hover:scale-105 transition-all">
+                Cerrar Notificación
+            </button>
+        </div>
+    </div>
+    
+    <div class="flex flex-col w-[70%] px-7 py-6 gap-y-5 overflow-y-scroll">
+        <h1 class="text-xl font-semibold">Graficas</h1>
+        <div class="flex w-full gap-x-5">
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Usuarios activos por semana</p>
+                <canvas baseChart [data]="usuariosPorSemanaData" [options]="barOptions" type="bar"></canvas>
+            </div>
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Distribución de tipos de alerta</p>
+                <canvas baseChart [data]="tiposDeAlertaData" [options]="pieOptions" type="doughnut"> </canvas>
+            </div>
+        </div>
+        <div class="flex w-full gap-x-5">
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Alertas por estado</p>
+                <canvas baseChart [data]="alertasPorEstadoData" [options]="pieOptions" type="pie"></canvas>
+            </div>
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Actividad últimos 7 días</p>
+                <canvas baseChart [data]="actividadUltimos7DiasData" [options]="barOptions" type="bar"></canvas>
+            </div>
+        </div>
+        <div class="flex w-full gap-x-5">
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Alertas: mes actual vs anterior</p>
+                <canvas baseChart [data]="comparativaMesesData" [options]="lineOptions" type="line"></canvas>
+            </div>
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Usuarios con contactos configurados</p>
+                <canvas baseChart [data]="porcentajeConContactosData" [options]="pieOptions" type="doughnut"></canvas>
+            </div>
+        </div>
+        <div class="flex w-full gap-x-5">
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Área de cobertura por zona</p>
+                <canvas baseChart [data]="radarZonasData" [options]="radarOptions" type="radar"></canvas>
+            </div>
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Carga de alertas por hora del día</p>
+                <canvas baseChart [data]="polarHorasData" [options]="polarOptions" type="polarArea"></canvas>
+            </div>
+        </div>
+        <div class="flex w-full gap-x-5">
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Tiempo de respuesta vs distancia</p>
+                <canvas baseChart [data]="scatterRespuestaData" [options]="scatterOptions" type="scatter"></canvas>
+            </div>
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Usuarios por grupo (tamaño = actividad)</p>
+                <canvas baseChart [data]="bubbleGruposData" [options]="bubbleOptions" type="bubble"></canvas>
+            </div>
+        </div>
+        <div class="flex w-full gap-x-5">
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Crecimiento acumulado de usuarios</p>
+                <canvas baseChart [data]="areaAcumuladaData" [options]="lineOptions" type="line"></canvas>
+            </div>
+            <div class="flex-1 rounded-2xl p-6 pb-12 h-80 bg-[#1f594f]">
+                <p class="text-white font-semibold text-sm mb-2">Alertas por tipo (barras horizontales)</p>
+                <canvas baseChart [data]="barrasHorizontalesData" [options]="barHorizontalOptions" type="bar"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="flex flex-col w-[30%] pr-6 pl-3 py-6">
+        <h1 class="mb-2 font-semibold">Ultimas Alertas</h1>
+        <div class="flex flex-col rounded-xl h-full p-6 shadow-[inset_0_4px_10px_rgba(61,166,147,0.5)] gap-y-4">
+            <div *ngFor="let user of lastUsers()" class="flex h-20 p-4 rounded-xl bg-[#e0fff9] text-[#1f594f] font-semibold shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] cursor-pointer hover:scale-[1.025] transition-all duration-300 hover:bg-[#8fd8c9]" (click)="openMapNow()">
+                <div class="w-11 h-11 bg-[#1f594f] rounded-full mr-3"></div>
+                <div class="flex flex-col">
+                    <p>{{ user.username }}</p>
+                    <p>A {{ user.lastUbication.lat }}km de ti</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,9 @@
+<div class="flex items-center justify-center bg-[#f2fffd] min-h-screen pt-5">
+    <app-sidebar></app-sidebar>
+    <div class="flex flex-col w-275 h-250">
+        <app-navbar (openProfile)="showProfile = true"></app-navbar>
+        <div class="flex-1 min-h-0"><router-outlet (activate)="onActivate($event)"></router-outlet></div>
+    </div>
+    <app-profile *ngIf="showProfile" (close)="showProfile = false"></app-profile>
+    <app-map *ngIf="showMap" (close)="showMap = false"></app-map>
+</div>

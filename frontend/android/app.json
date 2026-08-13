@@ -1,0 +1,36 @@
+{
+    "expo": {
+        "name": "GuardianOfTheMissing",
+        "slug": "GuardianOfTheMissing",
+        "scheme": "guardianofthemissing",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/icon.png",
+        "userInterfaceStyle": "light",
+        "ios": {
+        "supportsTablet": true
+        },
+        "android": {
+            "config": {
+                "googleMaps": {
+                "apiKey": "AIzaSyDjnZYASq8k5yXi1KHwEU0z5x7FT6bqr8Q"
+                }
+            },
+            "adaptiveIcon": {
+                "backgroundColor": "#E6F4FE",
+                "foregroundImage": "./assets/android-icon-foreground.png",
+                "backgroundImage": "./assets/android-icon-background.png",
+                "monochromeImage": "./assets/android-icon-monochrome.png"
+            },
+            "predictiveBackGestureEnabled": false,
+            "package": "com.anonymous.GuardianOfTheMissing"
+        },
+        "web": {
+            "favicon": "./assets/favicon.png"
+        },
+        "plugins": [
+            "expo-router",
+            ["expo-contacts", { "contactsPermission": "Permite acceso a tus contactos para agregarlos como contacto de emergencia."}]
+        ]
+    }
+}

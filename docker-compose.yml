@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: guardian_api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Si el .env no especifica host, usar los servicios locales en docker-compose
+      - MYSQL_HOST=${MYSQL_HOST:-mysql}
+      - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017}
+    depends_on:
+      - mongodb
+      - mysql
+    networks:
+      - guardian_network
+
+  mongodb:
+    image: mongo:6.0
+    container_name: guardian_mongodb
+    restart: always
+    ports:
+      - "27017:27017" # Puerto expuesto para compás o herramientas externas
+    environment:
+      MONGO_INITDB_DATABASE: hospital_230892_geo
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - guardian_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: guardian_mysql
+    restart: always
+    ports:
+      - "3306:3306" # Puerto expuesto para DBeaver u otras herramientas externas
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: guardian
+      MYSQL_USER: local_user
+      MYSQL_PASSWORD: local_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - guardian_network
+
+volumes:
+  mongodb_data:
+  mysql_data:
+
+networks:
+  guardian_network:
+    driver: bridge

@@ -1,0 +1,20 @@
+<div class="fixed inset-0 flex items-center justify-center bg-black/25">
+    <div class="bg-white rounded-xl p-10 shadow-2xl w-xl">
+        <h2 class="text-2xl font-semibold mb-4">Mi Perfil</h2>
+        <div class="flex flex-col w-full justify-center items-center mb-6">
+            <div class="w-40 h-40 bg-stone-800 rounded-full mb-4 shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)]"></div>
+            <!-- condicional de tag admin -->
+            <p class="font-semibold" [class.hidden]="usuarioActual?.role !== 'admin'">Administrador</p>
+            <p class="text-xl font-semibold">{{ usuarioActual?.username }}</p>
+        </div>
+        <div class="mt-12">
+            <div class="flex font-normal">Correo: <p class="font-semibold ml-2">{{ usuarioActual?.email }}</p></div>
+            <div class="flex font-normal">Numero de telefono: <p class="font-semibold ml-2">{{ usuarioActual?.phonenumber }}</p></div>
+            <div class="flex font-normal">Mi tipo de sangre: <p class="font-semibold ml-2">{{ usuarioActual?.bloodType }}</p></div>
+            <p class="text-[#1f594f] font-semibold cursor-pointer mt-6">Cambiar contraseña</p>
+        </div>
+        <div class="flex justify-end">
+            <button class="bg-[#1f594f] text-white px-6 py-2 rounded-full cursor-pointer font-semibold shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] hover:scale-[1.025] transition-all duration-300" (click)="cerrar()">Cerrar</button>
+        </div>
+    </div>
+</div>
