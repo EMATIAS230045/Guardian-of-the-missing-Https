@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, status, HTTPException, Body
 from fastapi.security import HTTPAuthorizationCredentials
-from sqlmodel import Session, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from datetime import timedelta
 import jwt
 
@@ -22,11 +23,10 @@ from app.modules.mau.security import (
 router = APIRouter(prefix="/auth", tags=["Autenticación"])
 
 @router.post("/registro", response_model=UsuarioResponse, status_code=status.HTTP_201_CREATED)
-def registrar_usuario(usuario_in: UsuarioCreate, sesion: Session = Depends(obtener_sesion)):
+async def registrar_usuario(usuario_in: UsuarioCreate, sesion: AsyncSession = Depends(obtener_sesion)):
     # 1. Validar si el correo ya existe
-    usuario_existente = sesion.exec(
-        select(Usuario).where(Usuario.correo == usuario_in.correo)
-    ).first()
+    result = await sesion.execute(select(Usuario).where(Usuario.correo == usuario_in.correo))
+    usuario_existente = result.scalar_one_or_none()
     
     if usuario_existente:
         raise HTTPException(
@@ -48,17 +48,16 @@ def registrar_usuario(usuario_in: UsuarioCreate, sesion: Session = Depends(obten
     )
     
     sesion.add(nuevo_usuario)
-    sesion.commit()
-    sesion.refresh(nuevo_usuario)
+    await sesion.commit()
+    await sesion.refresh(nuevo_usuario)
 
     return nuevo_usuario
 
 
 @router.post("/login", response_model=TokenResponse)
-def login_usuario(credenciales: LoginRequest, sesion: Session = Depends(obtener_sesion)):
-    usuario = sesion.exec(
-        select(Usuario).where(Usuario.correo == credenciales.correo)
-    ).first()
+async def login_usuario(credenciales: LoginRequest, sesion: AsyncSession = Depends(obtener_sesion)):
+    result = await sesion.execute(select(Usuario).where(Usuario.correo == credenciales.correo))
+    usuario = result.scalar_one_or_none()
 
     if not usuario or not verificar_contrasena(credenciales.contrasena, usuario.contrasena_hash):
         raise HTTPException(
@@ -94,9 +93,9 @@ def login_usuario(credenciales: LoginRequest, sesion: Session = Depends(obtener_
     }
 
 @router.post("/logout", status_code=status.HTTP_200_OK)
-def cerrar_sesion(
+async def cerrar_sesion(
     credenciales: HTTPAuthorizationCredentials = Depends(esquema_seguridad),
-    db: Session = Depends(obtener_sesion)
+    db: AsyncSession = Depends(obtener_sesion)
 ):
     """
     Invalida el token actual enviándolo a la lista negra.
@@ -104,20 +103,19 @@ def cerrar_sesion(
     token_actual = credenciales.credentials
     
     # Verificamos si por alguna razón el token ya estaba bloqueado
-    token_existente = db.exec(
-        select(TokenBloqueado).where(TokenBloqueado.token == token_actual)
-    ).first()
+    result = await db.execute(select(TokenBloqueado).where(TokenBloqueado.token == token_actual))
+    token_existente = result.scalar_one_or_none()
     
     if not token_existente:
         # Lo agregamos a la lista negra
         nuevo_bloqueo = TokenBloqueado(token=token_actual)
         db.add(nuevo_bloqueo)
-        db.commit()
+        await db.commit()
         
     return {"mensaje": "Sesión cerrada exitosamente."}
 
 @router.post("/refresh", response_model=TokenResponse)
-def renovar_token(refresh_token: str = Body(..., embed=True)):
+async def renovar_token(refresh_token: str = Body(..., embed=True)):
     """
     Recibe un refresh_token en el body: {"refresh_token": "tu_token..."}
     Devuelve un nuevo access_token manteniendo el mismo refresh_token.
@@ -166,7 +164,7 @@ def renovar_token(refresh_token: str = Body(..., embed=True)):
         )
 
 @router.get("/prueba-protegida")
-def ruta_protegida_de_prueba(datos_usuario: dict = Depends(obtener_usuario_actual)):
+async def ruta_protegida_de_prueba(datos_usuario: dict = Depends(obtener_usuario_actual)):
     """
     Ruta para probar el fallo y éxito de los Access Tokens.
     Solo se puede acceder si 'obtener_usuario_actual' no lanza un error.

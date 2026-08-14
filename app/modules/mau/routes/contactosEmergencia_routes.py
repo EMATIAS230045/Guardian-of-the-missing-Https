@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.modules.mau.database import obtener_sesion
 from app.modules.mau.security import obtener_usuario_actual
 from app.database.models import (
@@ -18,9 +19,9 @@ router = APIRouter(
 # 1. CREAR (POST)
 # -----------------------------------------
 @router.post("/", response_model=ContactoEmergenciaResponse, status_code=status.HTTP_201_CREATED)
-def crear_contacto(
+async def crear_contacto(
     contacto: ContactoEmergenciaCreate, 
-    db: Session = Depends(obtener_sesion), 
+    db: AsyncSession = Depends(obtener_sesion), 
     usuario_actual: dict = Depends(obtener_usuario_actual)
 ):
     # CORRECCIÓN: Usamos corchetes para extraer el id_usuario del diccionario
@@ -30,8 +31,8 @@ def crear_contacto(
     )
     
     db.add(nuevo_contacto)
-    db.commit()
-    db.refresh(nuevo_contacto)
+    await db.commit()
+    await db.refresh(nuevo_contacto)
     
     return nuevo_contacto
 
@@ -39,8 +40,8 @@ def crear_contacto(
 # 2. LEER TODOS (GET)
 # -----------------------------------------
 @router.get("/", response_model=list[ContactoEmergenciaResponse])
-def obtener_mis_contactos(
-    db: Session = Depends(obtener_sesion), 
+async def obtener_mis_contactos(
+    db: AsyncSession = Depends(obtener_sesion), 
     usuario_actual: dict = Depends(obtener_usuario_actual)
 ):
     # CORRECCIÓN: usuario_actual["id_usuario"]
@@ -48,17 +49,18 @@ def obtener_mis_contactos(
         ContactoEmergencia.id_usuario == usuario_actual["id_usuario"]
     ).order_by(ContactoEmergencia.prioridad.asc())
     
-    contactos = db.exec(statement).all()
+    result = await db.execute(statement)
+    contactos = result.scalars().all()
     return contactos
 
 # -----------------------------------------
 # 3. ACTUALIZAR (PATCH)
 # -----------------------------------------
 @router.patch("/{id_contacto}", response_model=ContactoEmergenciaResponse)
-def actualizar_contacto(
+async def actualizar_contacto(
     id_contacto: int, 
     datos_actualizar: ContactoEmergenciaUpdate, 
-    db: Session = Depends(obtener_sesion), 
+    db: AsyncSession = Depends(obtener_sesion), 
     usuario_actual: dict = Depends(obtener_usuario_actual)
 ):
     # CORRECCIÓN: usuario_actual["id_usuario"]
@@ -66,7 +68,8 @@ def actualizar_contacto(
         ContactoEmergencia.id_contacto == id_contacto,
         ContactoEmergencia.id_usuario == usuario_actual["id_usuario"]
     )
-    contacto_db = db.exec(statement).first()
+    result = await db.execute(statement)
+    contacto_db = result.scalar_one_or_none()
 
     if not contacto_db:
         raise HTTPException(status_code=404, detail="Contacto no encontrado o no autorizado")
@@ -77,8 +80,8 @@ def actualizar_contacto(
         setattr(contacto_db, key, value)
 
     db.add(contacto_db)
-    db.commit()
-    db.refresh(contacto_db)
+    await db.commit()
+    await db.refresh(contacto_db)
     
     return contacto_db
 
@@ -86,9 +89,9 @@ def actualizar_contacto(
 # 4. ELIMINAR (DELETE)
 # -----------------------------------------
 @router.delete("/{id_contacto}", status_code=status.HTTP_204_NO_CONTENT)
-def eliminar_contacto(
+async def eliminar_contacto(
     id_contacto: int, 
-    db: Session = Depends(obtener_sesion), 
+    db: AsyncSession = Depends(obtener_sesion), 
     usuario_actual: dict = Depends(obtener_usuario_actual)
 ):
     # CORRECCIÓN: usuario_actual["id_usuario"]
@@ -96,11 +99,12 @@ def eliminar_contacto(
         ContactoEmergencia.id_contacto == id_contacto,
         ContactoEmergencia.id_usuario == usuario_actual["id_usuario"]
     )
-    contacto_db = db.exec(statement).first()
+    result = await db.execute(statement)
+    contacto_db = result.scalar_one_or_none()
 
     if not contacto_db:
         raise HTTPException(status_code=404, detail="Contacto no encontrado o no autorizado")
 
-    db.delete(contacto_db)
-    db.commit()
+    await db.delete(contacto_db)
+    await db.commit()
     return
