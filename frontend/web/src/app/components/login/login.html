@@ -9,7 +9,8 @@
             <label for="password" class="font-semibold">Contraseña</label>
             <div *ngIf="errorLoginPassword" class="text-red-600 text-sm">{{ errorLoginPassword }}</div>
             <input id="password" type="password" [(ngModel)]="l_password" class="w-full h-12 mt-2 mb-4 pl-4 rounded-xl font-semibold shadow-[inset_0_4px_10px_rgba(61,166,147,0.5)] text-stone-800 bg-[#f5fffd] focus:ring-2 focus:ring-[#1f594f] outline-none">
-            <p class="flex text-center mb-8 font-semibold cursor-pointer text-[#1f594f]" (click)="onSendCode()">Olvide mi contraseña</p>
+            <p class="flex text-center mb-4 font-semibold cursor-pointer text-[#1f594f]" (click)="onSendCode()">Olvide mi contraseña</p>
+            <div *ngIf="errorLoginGeneric" class="text-red-600 text-sm mb-4">{{ errorLoginGeneric }}</div>
             <button class="w-full h-12 mb-4 rounded-xl shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] bg-[#e0fff9] text-[#1f594f] font-semibold hover:scale-[1.025] transition-all duration-300 cursor-pointer" (click)="onLoginSuccess()">Iniciar sesión</button>
             <div class="flex mb-4 justify-center">O inicia sesion con</div>
             <button class="flex justify-center items-center w-full h-12 mb-4 rounded-xl shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] bg-[#e0fff9] text-[#1f594f] font-semibold hover:scale-[1.025] transition-all duration-300 cursor-pointer">Iniciar sesion con Google <div class="ml-3 w-6 h-6 bg-[url('/google.png')] bg-contain bg-center bg-no-repeat"></div></button>

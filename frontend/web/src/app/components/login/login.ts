@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
     selector: 'app-login',
@@ -11,7 +12,11 @@ import { UserService } from '../../services/user';
 })
 
 export class LoginComponent {
-    constructor(private router: Router, private userService: UserService) {}
+    constructor(
+        private router: Router, 
+        private userService: UserService,
+        private authService: AuthService
+    ) {}
 
     l_email = '';
     l_password = '';
@@ -28,51 +33,55 @@ export class LoginComponent {
     errorRegisterEmail = '';
     errorRegisterPassword = '';
     errorRegisterPasswordConfirm = '';
+    
+    // Add a generic login error property
+    errorLoginGeneric = '';
 
     onSubmit() { this.onLoginSuccess(); }
 
     onSendCode() { this.router.navigate(['/verification']); }
 
     onLoginSuccess() {
-        if (!this.validarLogin()) { return; }
-        const usuario = this.userService.user().find( u => u.email.toLowerCase() === this.l_email.trim().toLowerCase() );
-        if (usuario) { this.userService.iniciarSesion(usuario.id); }
-        this.router.navigate(['/home/dashboard']);
-    }
-
-    private validarLogin(): boolean {
+        // Reset errors
         this.errorLoginEmail = '';
         this.errorLoginPassword = '';
-        let esValido = true;
+        this.errorLoginGeneric = '';
 
-        // Validar campo lleno
+        let esValido = true;
         if (!this.l_email.trim()) {
             this.errorLoginEmail = 'El correo es obligatorio.';
             esValido = false;
         } else if (!this.formatoEmailValido(this.l_email)) {
             this.errorLoginEmail = 'El formato del correo no es válido.';
             esValido = false;
-        } else {
-            // Validar que el correo exista en el UserService
-            const usuarioEncontrado = this.userService.user().find(
-                (u) => u.email.toLowerCase() === this.l_email.trim().toLowerCase()
-            );
-
-            if (!usuarioEncontrado) {
-                this.errorLoginEmail = 'No existe una cuenta con este correo.';
-                esValido = false;
-            } else {
-                if (!this.l_password.trim()) {
-                    this.errorLoginPassword = 'La contraseña es obligatoria.';
-                    esValido = false;
-                } else if (this.l_password !== usuarioEncontrado.password) {
-                    this.errorLoginPassword = 'Contraseña incorrecta.';
-                    esValido = false;
-                }
-            }
         }
 
-        return esValido;
+        if (!this.l_password.trim()) {
+            this.errorLoginPassword = 'La contraseña es obligatoria.';
+            esValido = false;
+        }
+
+        if (!esValido) { return; }
+
+        const credentials = {
+            correo: this.l_email.trim(),
+            contrasena: this.l_password.trim()
+        };
+
+        this.authService.login(credentials).subscribe({
+            next: (res) => {
+                // TODO: Save token to localStorage, e.g., localStorage.setItem('token', res.access_token);
+                // For now, we still trigger the local mock session state if needed, or simply route
+                // If the backend returns user details eventually, you can sync it with UserService
+                console.log("Login successful! Token:", res.access_token);
+                this.router.navigate(['/home/dashboard']);
+            },
+            error: (err) => {
+                console.error("Login error:", err);
+                // Mostrar el error real devuelto por el backend
+                this.errorLoginGeneric = err.message;
+            }
+        });
     }
 
     private formatoEmailValido(email: string): boolean {
