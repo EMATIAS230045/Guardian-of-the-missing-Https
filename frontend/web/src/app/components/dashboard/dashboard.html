@@ -90,8 +90,8 @@
             <div *ngFor="let alerta of latestAlerts" class="flex p-4 rounded-xl bg-[#e0fff9] text-[#1f594f] font-semibold shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] cursor-pointer hover:scale-[1.025] transition-all duration-300 hover:bg-[#8fd8c9]" (click)="openMapNow()">
                 <div class="w-11 h-11 bg-[#1f594f] rounded-full mr-3 shrink-0"></div>
                 <div class="flex flex-col w-full">
-                    <p class="uppercase text-sm font-bold">Riesgo {{ alerta.nivel_riesgo || 'N/A' }}</p>
-                    <p class="text-xs text-[#2c8273]">{{ alerta.estado }} - {{ alerta.fecha_emision | date:'shortTime' }}</p>
+                    <p class="uppercase text-sm font-bold">Riesgo {{ alerta.riesgo || 'N/A' }}</p>
+                    <p class="text-xs text-[#2c8273]">{{ alerta.estado }} - {{ alerta.fecha_hora | date:'shortTime' }}</p>
                     <p class="text-sm mt-1 truncate max-w-[200px]" [title]="alerta.comentario">{{ alerta.comentario || 'Sin comentario' }}</p>
                 </div>
             </div>
