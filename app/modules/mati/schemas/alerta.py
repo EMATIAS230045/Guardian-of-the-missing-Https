@@ -3,8 +3,14 @@ from datetime import datetime
 from typing import Optional, Literal
 
 # Tipos definidos con Literal para validar los valores exactos del Enum de MySQL
-RiesgoEnum = Literal['alta', 'media', 'baja']
-EstadoEnum = Literal['activa', 'atendida', 'cancelada', 'falsa_alarma']
+RiesgoEnum = Literal['alto', 'medio', 'bajo']
+EstadoEnum = Literal['activa', 
+    'atendida', 
+    'cancelada', 
+    'falsa_alarma', 
+    'estado_alerta',
+    'ESPERANDO_PIN',
+    'ALTA']
 
 # 1. Base: Campos comunes
 class AlertaBase(BaseModel):
@@ -12,13 +18,13 @@ class AlertaBase(BaseModel):
     longitud: float
     comentario: Optional[str] = None
     id_geocerca_mongo: Optional[str] = Field(default="Geo-01", examples=["Geo-01"])
-    nivel_riesgo: Optional[RiesgoEnum] = "alta"
+    riesgo: Optional[RiesgoEnum] = "alto"
 
 
 # 2. Para CREAR (POST)
 class AlertaCreate(AlertaBase):
     id_usuario: int
-    id_dispositivo: Optional[int] = None
+    id_dispositivo: int  # Obligatorio por el nullable=False de tu modelo
     estado: Optional[EstadoEnum] = "activa"
 
 
@@ -26,7 +32,7 @@ class AlertaCreate(AlertaBase):
 class AlertaUpdate(BaseModel):
     latitud: Optional[float] = None
     longitud: Optional[float] = None
-    nivel_riesgo: Optional[RiesgoEnum] = None
+    riesgo: Optional[RiesgoEnum] = None
     estado: Optional[EstadoEnum] = None
     comentario: Optional[str] = None
 
@@ -35,7 +41,7 @@ class AlertaUpdate(BaseModel):
 class AlertaResponse(AlertaBase):
     id_alerta: int
     id_usuario: int
-    id_dispositivo: Optional[int] = None
+    id_dispositivo: int
     estado: EstadoEnum
     fecha_hora: Optional[datetime] = None
 
@@ -46,7 +52,7 @@ class AlertaResponse(AlertaBase):
 # Esquema exclusivo para la entrada del Botón de Pánico
 class AlertaPanicoCreate(BaseModel):
     id_usuario: int
-    id_dispositivo: Optional[int] = None
+    id_dispositivo: int
     latitud: float
     longitud: float
     id_geocerca_mongo: Optional[str] = Field(default="Geo-01", examples=["Geo-01"])
@@ -55,3 +61,9 @@ class AlertaCancelar(BaseModel):
     id_alerta: int
     id_usuario: int
     pin: str = Field(..., description="PIN de cancelación de 4 a 6 dígitos", min_length=4, max_length=6)
+
+# schemas/alerta.py
+class AlertaCancelar(BaseModel):
+    id_alerta: int
+    id_usuario: int
+    pin: str

@@ -17,8 +17,19 @@ if MYSQL_URL.startswith("mysql+pymysql://"):
 elif MYSQL_URL.startswith("mysql://"):
     MYSQL_URL = MYSQL_URL.replace("mysql://", "mysql+aiomysql://")
 
+import ssl
+
+# Crear contexto SSL por defecto, requerido por TiDB Cloud
+ssl_context = ssl.create_default_context()
+
 # 1. El motor de conexión a MySQL
-engine = create_async_engine(MYSQL_URL, echo=False)
+engine = create_async_engine(
+    MYSQL_URL,
+    echo=False,
+    connect_args={"ssl": ssl_context},
+    pool_pre_ping=True,
+    pool_recycle=3600
+)
 
 # 2. Creador de sesiones (la "charla" con la base de datos)
 SessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)

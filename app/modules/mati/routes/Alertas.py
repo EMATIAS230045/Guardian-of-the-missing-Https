@@ -7,20 +7,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 #funcionando como plantilla que vamos a rellenar con nuestras credenciales
 from sqlalchemy.orm import Session
 #Esta la funcion que continen las credenciales y nos ayuda a crear la conexion con mysql
-from app.modules.mati.services.mysql.mysql import get_db
+from app.modules.mati.services.mysql.mysql import get_async_db as get_db
 #Este funciona como filtro para que cuando se envie un registro hacia las alerta primero
 #compruebe si tiene la estructura del esquema
 from app.modules.mati.schemas.alerta import AlertaCreate, AlertaResponse, AlertaUpdate, AlertaPanicoCreate, AlertaCancelar
 #Esto es para traer nuestros controladores y llamarlos cuando se realice una peticion y decimos todo lo que esta aqui
 #refiere a el como alerta_controller
 from app.modules.mati.controllers import alerta as alerta_controller
-#from app.modules.mati.controllers.Alertas import buscar_alerta
+#from controllers.Alertas import buscar_alerta
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
-
-
-from app.modules.mati.services.mysql.mysql import get_db
 
 router = APIRouter(prefix="/alertas", tags=["Alertas"])
 
@@ -65,8 +62,14 @@ async def activar_boton_panico(
 
 # routes/Alertas.py
 
-@router.post("/cancelar", response_model=AlertaResponse)
-async def cancelar_alerta(datos: AlertaCancelar, db: AsyncSession = Depends(get_db)):
+@router.post("/cancelar")
+async def cancelar_alerta(
+    datos: AlertaCancelar,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Cancela una alerta validando el PIN con hash SHA-256 y control de fuerza bruta.
+    """
     return await alerta_controller.cancelar_alerta_con_pin(db, datos)
 
 @router.patch("/{id_alerta}/atender", response_model=AlertaResponse)
