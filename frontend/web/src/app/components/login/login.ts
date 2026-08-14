@@ -70,15 +70,13 @@ export class LoginComponent {
 
         this.authService.login(credentials).subscribe({
             next: (res) => {
-                // TODO: Save token to localStorage, e.g., localStorage.setItem('token', res.access_token);
-                // For now, we still trigger the local mock session state if needed, or simply route
-                // If the backend returns user details eventually, you can sync it with UserService
-                console.log("Login successful! Token:", res.access_token);
+                // Save the token to use in authenticated requests
+                localStorage.setItem('token', res.access_token);
+                console.log("Login successful! Token saved.");
                 this.router.navigate(['/home/dashboard']);
             },
             error: (err) => {
                 console.error("Login error:", err);
-                // Mostrar el error real devuelto por el backend
                 this.errorLoginGeneric = err.message;
             }
         });

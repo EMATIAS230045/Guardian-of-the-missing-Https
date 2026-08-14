@@ -1,33 +1,41 @@
 import { Component, Output, EventEmitter, computed, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { NgFor, NgIf, UpperCasePipe } from '@angular/common';
+import { NgFor, NgIf, UpperCasePipe, DatePipe } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
-import { UserService } from '../../services/user';
 import { WebsocketService } from '../../services/websocket.service';
+import { AlertsService, AlertaBackend } from '../../services/alerts';
 import { Chart, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
 Chart.register(...registerables);
 
 @Component({
     selector: 'app-dashboard',
-    imports: [NgFor, NgIf, UpperCasePipe, BaseChartDirective],
+    imports: [NgFor, NgIf, UpperCasePipe, DatePipe, BaseChartDirective],
     templateUrl: './dashboard.html'
 })
 
 export class DashboardComponent implements OnInit, OnDestroy {
-    private users = inject(UserService)
     private ws = inject(WebsocketService)
     private cdr = inject(ChangeDetectorRef)
+    private alertsService = inject(AlertsService)
     private wsSub!: Subscription;
 
-    lastUsers = computed(() =>
-        this.users.user().slice(-5)
-    );
+    latestAlerts: AlertaBackend[] = [];
 
     activeAlert: any = null;
     alertAddress: string = '';
 
     ngOnInit() {
+        // Fetch real alerts
+        this.alertsService.getAlertas(0, 10).subscribe({
+            next: (alerts) => {
+                // Tomamos las últimas 5 o las que consideres
+                this.latestAlerts = alerts.slice(0, 5);
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error("Error fetching alerts:", err)
+        });
+
         this.wsSub = this.ws.alerts$.subscribe(async (alertData) => {
             console.warn('Realtime alert received:', alertData);
             this.activeAlert = alertData;
