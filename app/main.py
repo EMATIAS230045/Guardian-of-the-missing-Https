@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.config.mongo_config import (
     connect_to_mongo,
@@ -20,6 +21,14 @@ app = FastAPI(
     title="GuardianOfTheMising API",
     version="0.1.0",
     description="API base para el proyecto GuardianOfTheMising",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
