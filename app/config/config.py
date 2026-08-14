@@ -21,7 +21,8 @@ if not DATABASE_URL:
 # 3. Configurar SSL a través de connect_args si la conexión es hacia TiDB Cloud
 connect_args = {}
 if "tidbcloud.com" in DATABASE_URL:
-    connect_args = {"ssl": {"ca": None}}
+    import ssl
+    connect_args = {"ssl": ssl.create_default_context()}
 
 # pool_pre_ping evita errores por conexiones muertas tras inactividad
 engine = create_engine(
