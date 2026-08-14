@@ -4,13 +4,13 @@ from typing import Optional, Literal
 
 # Tipos definidos con Literal para validar los valores exactos del Enum de MySQL
 RiesgoEnum = Literal['alto', 'medio', 'bajo']
-EstadoEnum = Literal['activa', 
+EstadoEnum = Literal[
+    'activa', 
     'atendida', 
     'cancelada', 
-    'falsa_alarma', 
-    'estado_alerta',
-    'ESPERANDO_PIN',
-    'ALTA']
+    'falsa_alarma',
+    'ESPERANDO_PIN'
+]
 
 # 1. Base: Campos comunes
 class AlertaBase(BaseModel):

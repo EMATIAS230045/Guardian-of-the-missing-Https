@@ -2,7 +2,6 @@ from datetime import date, datetime, timezone
 from typing import List, Optional
 from sqlmodel import Field, SQLModel, Relationship
 from pydantic import EmailStr, field_validator, BaseModel
-from decimal import Decimal
 from enum import Enum
 
 # --- ENUMS ---
@@ -11,11 +10,13 @@ class EstadoAlerta(str, Enum):
     atendida = "atendida"
     cancelada = "cancelada"
     falsa_alarma = "falsa_alarma"
+    ESPERANDO_PIN = "ESPERANDO_PIN"
 
 class NivelRiesgo(str, Enum):
-    baja = "baja"
-    media = "media"
-    alta = "alta"
+    # Valores en minúsculas para coincidir con el esquema y la BD
+    bajo = "bajo"
+    medio = "medio"
+    alto = "alto"
 
 class TipoDispositivo(str, Enum):
     android = "android"
@@ -105,11 +106,11 @@ class Alerta(SQLModel, table=True):
     id_usuario: int = Field(foreign_key="Usuarios.id_usuario", nullable=False)
     id_dispositivo: Optional[int] = Field(foreign_key="Dispositivos.id_dispositivo", default=None)
     id_geocerca_mongo: Optional[str] = Field(default=None, max_length=24) 
-    latitud: Decimal = Field(max_digits=10, decimal_places=7, nullable=False)
-    longitud: Decimal = Field(max_digits=10, decimal_places=7, nullable=False)
+    latitud: float = Field(nullable=False)
+    longitud: float = Field(nullable=False)
     fecha_hora: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
     estado: EstadoAlerta = Field(default=EstadoAlerta.activa, nullable=False)
-    nivel_riesgo: NivelRiesgo = Field(default=NivelRiesgo.media, nullable=False)
+    nivel_riesgo: NivelRiesgo = Field(default=NivelRiesgo.alto, nullable=False)
     comentario: Optional[str] = Field(default=None, max_length=255)
     intentos_fallidos: int = Field(default=0, nullable=False)
     ultimo_intento_fallido: Optional[datetime] = None
