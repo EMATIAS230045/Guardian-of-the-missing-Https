@@ -30,8 +30,8 @@ MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "1234")
 MYSQL_DB = os.getenv("MYSQL_DB", "guardian")
 
 DATABASE_URL = (
-    f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}"
-    f"@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}"
+    f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@"
+    f"{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}?ssl_mode=VERIFY_IDENTITY"
 )
 
 # pool_pre_ping evita errores por conexiones muertas tras inactividad
