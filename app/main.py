@@ -39,6 +39,12 @@ def health_check() -> HealthResponse:
 
 @app.on_event("startup")
 async def startup():
+    from app.config.config import engine
+    from sqlmodel import SQLModel
+    
+    # Crea las tablas relacionales en MySQL/TiDB si no existen
+    SQLModel.metadata.create_all(engine)
+    
     connect_to_mongo()
     await ensure_indexes()
 
