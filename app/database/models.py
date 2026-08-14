@@ -125,8 +125,8 @@ class Evidencia(SQLModel, table=True):
     id_alerta: int = Field(foreign_key="Alertas.id_alerta", nullable=False)
     tipo_evidencia: TipoEvidencia = Field(nullable=False)
     url_archivo: str = Field(max_length=255, nullable=False) 
-    latitud: Optional[Decimal] = Field(default=None, max_digits=10, decimal_places=7)
-    longitud: Optional[Decimal] = Field(default=None, max_digits=10, decimal_places=7)
+    latitud: Optional[float] = Field(default=None)
+    longitud: Optional[float] = Field(default=None)
     fecha_hora: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), nullable=False)
 
     alerta: Optional[Alerta] = Relationship(back_populates="evidencias")
