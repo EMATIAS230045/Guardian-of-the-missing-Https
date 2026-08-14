@@ -75,6 +75,7 @@ class Dispositivo(SQLModel, table=True):
     
     id_dispositivo: Optional[int] = Field(default=None, primary_key=True)
     id_usuario: int = Field(foreign_key="Usuarios.id_usuario", nullable=False)
+    numero_equipo: int = Field(default=1, nullable=False, description="Número relativo del dispositivo por usuario (1, 2, 3...)")
     tipo_dispositivo: TipoDispositivo = Field(nullable=False)
     token_fcm: Optional[str] = Field(default=None, max_length=255)
     modelo: Optional[str] = Field(default=None, max_length=100)
