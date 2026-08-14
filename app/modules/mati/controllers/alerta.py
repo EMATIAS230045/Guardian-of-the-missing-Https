@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from datetime import datetime, timezone, timedelta
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.database.models import Alerta
