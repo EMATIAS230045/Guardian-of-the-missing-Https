@@ -13,6 +13,7 @@ from app.modules.mau.routes.user_routes import router as user_router
 from app.modules.mau.routes.contactosEmergencia_routes import router as contactos_router
 from app.modules.mati.routes.Alertas import router as alertas_router
 from app.modules.mati.routes.mongo_test import router as mongo_test_router
+from app.modules.mati.routes.dispositivo import router as dispositivos_router
 from app.routes.ws_routes import router as ws_router
 
 app = FastAPI(
@@ -61,5 +62,6 @@ app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(contactos_router)
 app.include_router(alertas_router)
+app.include_router(dispositivos_router)
 app.include_router(mongo_test_router)
 app.include_router(ws_router)

@@ -35,8 +35,14 @@ async def actualizar_alerta(db: AsyncSession, id_alerta: int, alerta_data: Alert
     
     # exclude_unset=True evita sobrescribir con None los campos que el usuario no mandó
     datos_actualizar = alerta_data.model_dump(exclude_unset=True)
+
+    # Mapeo de campos del esquema al nombre real del modelo
+    CAMPO_ALIAS = {"riesgo": "nivel_riesgo"}
+
     for clave, valor in datos_actualizar.items():
-        setattr(alerta, clave, valor)
+        clave_modelo = CAMPO_ALIAS.get(clave, clave)  # traduce si hay alias
+        if hasattr(alerta, clave_modelo):
+            setattr(alerta, clave_modelo, valor)
         
     await db.commit()
     await db.refresh(alerta)
