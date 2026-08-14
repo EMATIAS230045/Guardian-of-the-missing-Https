@@ -1,4 +1,4 @@
-import { Component, inject, computed, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { NgFor, NgIf, CommonModule, DatePipe } from '@angular/common';
 import { AlertsService, Alerta } from '../../services/alerts';
 import { UserService } from '../../services/user';
@@ -15,6 +15,8 @@ export class HistorialComponent implements OnInit {
     private cdr = inject(ChangeDetectorRef);
 
     allAlertas: Alerta[] = [];
+    cargando = true;
+    errorCarga = false;
 
     // Estado de filtros
     ordenReciente = true;
@@ -30,13 +32,27 @@ export class HistorialComponent implements OnInit {
     }
 
     fetchAlertas() {
-        // Obtenemos un gran bloque de alertas (ej. 1000) o implementamos paginación en el backend real.
+        this.cargando = true;
+        this.errorCarga = false;
+
         this.alertas.getAlertas(0, 1000).subscribe({
             next: (data) => {
+                console.log('[HISTORIAL] Alertas obtenidas:', data);
+                console.log('[HISTORIAL] Total de alertas:', data.length);
+                if (data.length > 0) {
+                    console.log('[HISTORIAL] Ejemplo de alerta (campo keys):', Object.keys(data[0]));
+                    console.log('[HISTORIAL] Primera alerta:', data[0]);
+                }
                 this.allAlertas = data;
+                this.cargando = false;
                 this.cdr.detectChanges();
             },
-            error: (err) => console.error('Error fetching alertas en historial:', err)
+            error: (err) => {
+                console.error('[HISTORIAL] Error al obtener alertas:', err);
+                this.cargando = false;
+                this.errorCarga = true;
+                this.cdr.detectChanges();
+            }
         });
     }
 
@@ -45,21 +61,33 @@ export class HistorialComponent implements OnInit {
     get alertasBase(): Alerta[] {
         if (this.esAdmin) { return this.allAlertas; }
         const usuarioActual = this.users.getUsuarioActual();
-        if (!usuarioActual) return [];
-        // Filtramos localmente por id_usuario si no somos admin
+        if (!usuarioActual) return this.allAlertas; // Sin sesión: mostrar todas de todos modos
         return this.allAlertas.filter((a: Alerta) => a.id_usuario === usuarioActual.id);
     }
 
     get alertasFiltradas(): Alerta[] {
         let resultado = this.alertasBase;
-        if (this.soloPendientes) { resultado = resultado.filter((a: Alerta) => a.estado === 'pendiente'); }
-        if (this.soloEmergencias) { resultado = resultado.filter((a: Alerta) => a.nivel_riesgo === 'alto'); }
-        
+
+        // Filtro de pendientes: estado 'activa' equivale a pendiente en el backend
+        if (this.soloPendientes) {
+            resultado = resultado.filter(
+                (a: Alerta) => a.estado?.toLowerCase() === 'activa'
+            );
+        }
+        // Filtro de emergencias: riesgo 'alto'
+        if (this.soloEmergencias) {
+            resultado = resultado.filter(
+                (a: Alerta) => a.riesgo?.toLowerCase() === 'alto'
+            );
+        }
+
+        // Ordenar por fecha_hora (puede ser null, va al final)
         resultado = [...resultado].sort((a: Alerta, b: Alerta) => {
-            const diferencia = new Date(a.fecha_emision).getTime() - new Date(b.fecha_emision).getTime();
-            return this.ordenReciente ? -diferencia : diferencia;
+            const dateA = a.fecha_hora ? new Date(a.fecha_hora).getTime() : 0;
+            const dateB = b.fecha_hora ? new Date(b.fecha_hora).getTime() : 0;
+            return this.ordenReciente ? dateB - dateA : dateA - dateB;
         });
-        
+
         return resultado;
     }
 
@@ -70,7 +98,6 @@ export class HistorialComponent implements OnInit {
         return this.alertasFiltradas.slice(inicio, inicio + this.resultadosPorPagina);
     }
 
-    // Genera [1, 2, 3, ...] según el total de páginas, para poder iterarlo en el html
     get numerosDePagina(): number[] { return Array.from({ length: this.totalPaginas }, (_, i) => i + 1); }
 
     irAPagina(pagina: number) {
@@ -91,20 +118,17 @@ export class HistorialComponent implements OnInit {
         this.soloEmergencias = false;
         this.paginaActual = 1;
     }
-    
+
     toggleEstadoAlerta(alerta: Alerta) {
         if (!this.esAdmin) return;
-        const nuevoEstado = alerta.estado === 'atendida' ? 'pendiente' : 'atendida';
-        
-        // Actualizamos en la BD
+        const nuevoEstado = alerta.estado?.toLowerCase() === 'atendida' ? 'activa' : 'atendida';
+
         this.alertas.updateAlerta(alerta.id_alerta, { estado: nuevoEstado }).subscribe({
             next: () => {
-                // Actualizamos localmente para reflejar en la UI
                 alerta.estado = nuevoEstado;
                 this.cdr.detectChanges();
             },
-            error: (err) => console.error('Error actualizando alerta', err)
+            error: (err) => console.error('[HISTORIAL] Error actualizando alerta', err)
         });
     }
 }
-

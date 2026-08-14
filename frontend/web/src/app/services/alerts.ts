@@ -6,12 +6,14 @@ import { environment } from '../../environments/environment';
 export interface Alerta {
     id_alerta: number;
     id_usuario: number;
+    id_dispositivo: number;
     latitud: number;
     longitud: number;
-    nivel_riesgo: string;
-    estado: string;
-    comentario: string;
-    fecha_emision: string;
+    riesgo: string;          // 'alto' | 'medio' | 'bajo'
+    estado: string;          // 'activa' | 'atendida' | 'cancelada' | 'falsa_alarma'
+    comentario: string | null;
+    id_geocerca_mongo: string | null;
+    fecha_hora: string | null; // ISO datetime string
 }
 
 @Injectable({
