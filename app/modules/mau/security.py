@@ -5,13 +5,14 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv, find_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.database.models import TokenBloqueado
-from sqlmodel import Session, select
 from app.modules.mau.database import obtener_sesion
 
 load_dotenv(find_dotenv())
 
-SECRET_KEY = os.getenv("SECRET_KEY", "super_secreto_desarrollo") # Valor por defecto seguro para dev
+SECRET_KEY = os.getenv("SECRET_KEY", "super_secreto_de_desarrollo_32ch!")  # Mín. 32 chars para HS256
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 10080))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 7))
@@ -55,9 +56,9 @@ def verificar_contrasena(contrasena_plana: str, contrasena_hash: str) -> bool:
 # Cambiamos OAuth2PasswordBearer por HTTPBearer
 esquema_seguridad = HTTPBearer()
 
-def obtener_usuario_actual(
+async def obtener_usuario_actual(
     credenciales: HTTPAuthorizationCredentials = Depends(esquema_seguridad),
-    db: Session = Depends(obtener_sesion) # Inyectamos la BD aquí
+    db: AsyncSession = Depends(obtener_sesion)  # Inyectamos la sesión asíncrona
 ):
     """
     Intercepta el header 'Authorization: Bearer <token>', revisa que no esté
@@ -65,8 +66,9 @@ def obtener_usuario_actual(
     """
     token = credenciales.credentials
     
-    # 1. VERIFICAR LA LISTA NEGRA
-    token_revocado = db.exec(select(TokenBloqueado).where(TokenBloqueado.token == token)).first()
+    # 1. VERIFICAR LA LISTA NEGRA (usando await + execute en lugar de exec)
+    result = await db.execute(select(TokenBloqueado).where(TokenBloqueado.token == token))
+    token_revocado = result.scalar_one_or_none()
     if token_revocado:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
