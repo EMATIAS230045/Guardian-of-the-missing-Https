@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface AlertaBackend {
+export interface Alerta {
     id_alerta: number;
     id_usuario: number;
     latitud: number;
@@ -22,8 +22,8 @@ export class AlertsService {
     private apiUrl = environment.apiUrl;
 
     // Obtener todas las alertas del backend
-    getAlertas(skip: number = 0, limit: number = 100): Observable<AlertaBackend[]> {
-        return this.http.get<AlertaBackend[]>(`${this.apiUrl}/alertas/?skip=${skip}&limit=${limit}`);
+    getAlertas(skip: number = 0, limit: number = 100): Observable<Alerta[]> {
+        return this.http.get<Alerta[]>(`${this.apiUrl}/alertas/?skip=${skip}&limit=${limit}`);
     }
 
     // Actualizar una alerta

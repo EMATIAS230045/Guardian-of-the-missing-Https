@@ -1,6 +1,6 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, OnInit, ChangeDetectorRef } from '@angular/core';
 import { NgFor, NgIf, CommonModule, DatePipe } from '@angular/common';
-import { AlertsService, Alert } from '../../services/alerts';
+import { AlertsService, Alerta } from '../../services/alerts';
 import { UserService } from '../../services/user';
 
 @Component({
@@ -9,9 +9,12 @@ import { UserService } from '../../services/user';
     templateUrl: './historial.html'
 })
 
-export class HistorialComponent {
+export class HistorialComponent implements OnInit {
     alertas = inject(AlertsService);
     users = inject(UserService);
+    private cdr = inject(ChangeDetectorRef);
+
+    allAlertas: Alerta[] = [];
 
     // Estado de filtros
     ordenReciente = true;
@@ -22,29 +25,47 @@ export class HistorialComponent {
     paginaActual = 1;
     resultadosPorPagina = 10;
 
-    get esAdmin(): boolean { return this.users.getUsuarioActual()?.role === 'admin'; }
-
-    get alertasBase(): Alert[] {
-        if (this.esAdmin) { return this.alertas.alerts(); }
-        const usuarioActual = this.users.getUsuarioActual();
-        if (!usuarioActual) return [];
-        return this.alertas.alerts().filter(a => a.username === usuarioActual.username);
+    ngOnInit() {
+        this.fetchAlertas();
     }
 
-    get alertasFiltradas(): Alert[] {
+    fetchAlertas() {
+        // Obtenemos un gran bloque de alertas (ej. 1000) o implementamos paginación en el backend real.
+        this.alertas.getAlertas(0, 1000).subscribe({
+            next: (data) => {
+                this.allAlertas = data;
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error fetching alertas en historial:', err)
+        });
+    }
+
+    get esAdmin(): boolean { return this.users.getUsuarioActual()?.role === 'admin'; }
+
+    get alertasBase(): Alerta[] {
+        if (this.esAdmin) { return this.allAlertas; }
+        const usuarioActual = this.users.getUsuarioActual();
+        if (!usuarioActual) return [];
+        // Filtramos localmente por id_usuario si no somos admin
+        return this.allAlertas.filter((a: Alerta) => a.id_usuario === usuarioActual.id);
+    }
+
+    get alertasFiltradas(): Alerta[] {
         let resultado = this.alertasBase;
-        if (this.soloPendientes) { resultado = resultado.filter(a => a.state === 'Pendiente'); }
-        if (this.soloEmergencias) { resultado = resultado.filter(a => a.type === 'Emergencia'); }
-        resultado = [...resultado].sort((a, b) => {
-            const diferencia = new Date(a.date).getTime() - new Date(b.date).getTime();
+        if (this.soloPendientes) { resultado = resultado.filter((a: Alerta) => a.estado === 'pendiente'); }
+        if (this.soloEmergencias) { resultado = resultado.filter((a: Alerta) => a.nivel_riesgo === 'alto'); }
+        
+        resultado = [...resultado].sort((a: Alerta, b: Alerta) => {
+            const diferencia = new Date(a.fecha_emision).getTime() - new Date(b.fecha_emision).getTime();
             return this.ordenReciente ? -diferencia : diferencia;
         });
+        
         return resultado;
     }
 
     get totalPaginas(): number { return Math.max(1, Math.ceil(this.alertasFiltradas.length / this.resultadosPorPagina)); }
 
-    get alertasPaginadas(): Alert[] {
+    get alertasPaginadas(): Alerta[] {
         const inicio = (this.paginaActual - 1) * this.resultadosPorPagina;
         return this.alertasFiltradas.slice(inicio, inicio + this.resultadosPorPagina);
     }
@@ -71,9 +92,19 @@ export class HistorialComponent {
         this.paginaActual = 1;
     }
     
-    toggleEstadoAlerta(alerta: Alert) {
+    toggleEstadoAlerta(alerta: Alerta) {
         if (!this.esAdmin) return;
-        const nuevoEstado = alerta.state === 'Atendido' ? 'Pendiente' : 'Atendido';
-        this.alertas.updateAlert(alerta.number, { state: nuevoEstado });
+        const nuevoEstado = alerta.estado === 'atendida' ? 'pendiente' : 'atendida';
+        
+        // Actualizamos en la BD
+        this.alertas.updateAlerta(alerta.id_alerta, { estado: nuevoEstado }).subscribe({
+            next: () => {
+                // Actualizamos localmente para reflejar en la UI
+                alerta.estado = nuevoEstado;
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error actualizando alerta', err)
+        });
     }
 }
+

@@ -3,7 +3,7 @@ import { NgFor, NgIf, UpperCasePipe, DatePipe } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData } from 'chart.js';
 import { WebsocketService } from '../../services/websocket.service';
-import { AlertsService, AlertaBackend } from '../../services/alerts';
+import { AlertsService, Alerta } from '../../services/alerts';
 import { Chart, registerables } from 'chart.js';
 import { Subscription } from 'rxjs';
 Chart.register(...registerables);
@@ -20,7 +20,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private alertsService = inject(AlertsService)
     private wsSub!: Subscription;
 
-    latestAlerts: AlertaBackend[] = [];
+    latestAlerts: Alerta[] = [];
 
     activeAlert: any = null;
     alertAddress: string = '';
