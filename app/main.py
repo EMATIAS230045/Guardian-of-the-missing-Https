@@ -39,11 +39,12 @@ def health_check() -> HealthResponse:
 
 @app.on_event("startup")
 async def startup():
-    from app.config.config import engine
+    from app.modules.mati.services.mysql.mysql import engine
     from sqlmodel import SQLModel
     
-    # Crea las tablas relacionales en MySQL/TiDB si no existen
-    SQLModel.metadata.create_all(engine)
+    # Crea las tablas relacionales en MySQL/TiDB si no existen de forma asíncrona
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
     
     connect_to_mongo()
     await ensure_indexes()
