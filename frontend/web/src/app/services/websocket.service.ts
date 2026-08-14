@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -13,8 +14,9 @@ export class WebsocketService {
   }
 
   private connect() {
-    // In a real app, you would pass the actual user ID. Using 'web' as a generic client ID for now.
-    this.socket = new WebSocket('ws://localhost:8000/ws/web');
+    // La URL se obtiene del entorno (development → ws://localhost:8000, production → wss://guardian-api.onrender.com)
+    const wsUrl = `${environment.wsUrl}/ws/web`;
+    this.socket = new WebSocket(wsUrl);
 
     this.socket.onopen = (event) => {
       console.log('Connected to WebSocket server', event);
