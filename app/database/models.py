@@ -184,6 +184,11 @@ class LoginRequest(SQLModel):
     correo: EmailStr
     contrasena: str
 
+    @field_validator('correo')
+    @classmethod
+    def sanitizar_correo(cls, v: str) -> str:
+        return v.lower().strip()
+
 class TokenResponse(SQLModel):
     access_token: str
     refresh_token: str

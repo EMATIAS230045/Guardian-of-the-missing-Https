@@ -2,8 +2,12 @@ from fastapi import APIRouter, Depends, status, HTTPException, Body
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func
 from datetime import timedelta
 import jwt
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Importaciones directas
 from app.modules.mau.database import obtener_sesion
@@ -56,10 +60,27 @@ async def registrar_usuario(usuario_in: UsuarioCreate, sesion: AsyncSession = De
 
 @router.post("/login", response_model=TokenResponse)
 async def login_usuario(credenciales: LoginRequest, sesion: AsyncSession = Depends(obtener_sesion)):
-    result = await sesion.execute(select(Usuario).where(Usuario.correo == credenciales.correo))
+    # El validador de LoginRequest ya normaliza el correo (lower + strip)
+    correo_normalizado = credenciales.correo
+    logger.info(f"[LOGIN] Intento de login con correo: '{correo_normalizado}'")
+
+    # Búsqueda case-insensitive en la BD para mayor robustez
+    result = await sesion.execute(
+        select(Usuario).where(func.lower(Usuario.correo) == correo_normalizado.lower())
+    )
     usuario = result.scalar_one_or_none()
 
-    if not usuario or not verificar_contrasena(credenciales.contrasena, usuario.contrasena_hash):
+    logger.info(f"[LOGIN] Usuario encontrado en BD: {usuario is not None}")
+
+    if not usuario:
+        logger.warning(f"[LOGIN] No se encontró ningún usuario con correo: '{correo_normalizado}'")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Correo o contraseña incorrectos."
+        )
+
+    if not verificar_contrasena(credenciales.contrasena, usuario.contrasena_hash):
+        logger.warning(f"[LOGIN] Contraseña incorrecta para: '{correo_normalizado}'")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Correo o contraseña incorrectos."
