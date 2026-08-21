@@ -10,6 +10,6 @@
         <div *ngIf="cargando" class="mb-4 text-sm font-semibold text-[#1f594f]">Cargando reportes...</div>
         <div *ngIf="!cargando && errorCarga" class="mb-4 text-sm font-semibold text-red-600">No se pudieron cargar los reportes.</div>
         <div *ngIf="!cargando && !errorCarga && alertas.length === 0" class="mb-4 text-sm font-semibold text-[#1f594f]">No hay reportes con geolocalización.</div>
-        <div #mapContainer class="w-full h-200 rounded-xl"></div>
+        <div #mapContainer class="w-full h-200 rounded-xl [&_.reporte-marker]:!bg-transparent [&_.reporte-marker]:!border-0 [&_.reporte-marker_span]:block [&_.reporte-marker_span]:w-[22px] [&_.reporte-marker_span]:h-[22px] [&_.reporte-marker_span]:rounded-full [&_.reporte-marker_span]:bg-red-600 [&_.reporte-marker_span]:border-4 [&_.reporte-marker_span]:border-red-900 [&_.reporte-marker_span]:shadow-[0_0_0_5px_rgba(239,68,68,0.3)]"></div>
     </div>
 </div>

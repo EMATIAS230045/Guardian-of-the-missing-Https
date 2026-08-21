@@ -28,11 +28,12 @@ export class GeocercasComponent implements AfterViewInit {
     errorCarga = false;
 
     ngAfterViewInit() {
-        const pin = L.icon({
-            iconUrl: '../../public/pin.png',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
+        const pin = L.divIcon({
+            className: 'reporte-marker',
+            html: '<span></span>',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
+            popupAnchor: [0, -14]
         });
 
         this.map = L.map(this.mapContainer.nativeElement).setView([19.4326, -99.1332], 13);
@@ -45,7 +46,7 @@ export class GeocercasComponent implements AfterViewInit {
         this.cargarAlertas(pin);
     }
 
-    private cargarAlertas(pin: L.Icon) {
+    private cargarAlertas(pin: L.DivIcon) {
         this.alertasService.getAlertas(0, 1000).subscribe({
             next: (alertas) => {
                 const usuarioActual = this.userService.getUsuarioActual();
@@ -63,7 +64,7 @@ export class GeocercasComponent implements AfterViewInit {
         });
     }
 
-    private crearCapas(pin: L.Icon) {
+    private crearCapas(pin: L.DivIcon) {
         const alertasConCoordenadas = this.alertas.filter(alerta =>
             Number.isFinite(alerta.latitud) && Number.isFinite(alerta.longitud) &&
             alerta.latitud >= -90 && alerta.latitud <= 90 &&
@@ -82,14 +83,14 @@ export class GeocercasComponent implements AfterViewInit {
                 const coordenadas: L.LatLngExpression = [alerta.latitud, alerta.longitud];
                 return [
                     L.circle(coordenadas, {
-                        radius: 100,
+                        radius: 500,
                         color: '#dc2626',
                         fillColor: '#ef4444',
-                        fillOpacity: 0.14,
-                        weight: 2
+                        fillOpacity: 0.22,
+                        weight: 3
                     }),
                     L.circleMarker(coordenadas, {
-                        radius: 9,
+                        radius: 10,
                         color: '#991b1b',
                         fillColor: '#dc2626',
                         fillOpacity: 1,
