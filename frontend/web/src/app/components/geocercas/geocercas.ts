@@ -28,6 +28,14 @@ export class GeocercasComponent implements AfterViewInit {
     errorCarga = false;
 
     ngAfterViewInit() {
+        const pin = L.divIcon({
+            className: 'reporte-marker',
+            html: '<span></span>',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
+            popupAnchor: [0, -14]
+        });
+
         this.map = L.map(this.mapContainer.nativeElement).setView([19.4326, -99.1332], 13);
 
         L.tileLayer(
@@ -35,17 +43,17 @@ export class GeocercasComponent implements AfterViewInit {
             { attribution: '&copy; OpenStreetMap & CartoDB' }
         ).addTo(this.map);
 
-        this.cargarAlertas();
+        this.cargarAlertas(pin);
     }
 
-    private cargarAlertas() {
+    private cargarAlertas(pin: L.DivIcon) {
         this.alertasService.getAlertas(0, 1000).subscribe({
             next: (alertas) => {
                 const usuarioActual = this.userService.getUsuarioActual();
                 this.alertas = usuarioActual?.role === 'admin'
                     ? alertas
                     : alertas.filter(alerta => !usuarioActual || alerta.id_usuario === usuarioActual.id);
-                this.crearCapas();
+                this.crearCapas(pin);
                 this.cargando = false;
             },
             error: (error) => {
@@ -56,16 +64,8 @@ export class GeocercasComponent implements AfterViewInit {
         });
     }
 
-    private crearCapas() {
-        if (this.capaMarcadores) this.map.removeLayer(this.capaMarcadores);
-        if (this.capaCalor) this.map.removeLayer(this.capaCalor);
-        if (this.capaPuntosRojos) this.map.removeLayer(this.capaPuntosRojos);
-
-        const usuarioActual = this.userService.getUsuarioActual();
-        const alertasVisibles = usuarioActual?.role === 'admin'
-            ? this.alertas
-            : this.alertas.filter(alerta => !usuarioActual || alerta.id_usuario === usuarioActual.id);
-        const alertasConCoordenadas = alertasVisibles.filter(alerta =>
+    private crearCapas(pin: L.DivIcon) {
+        const alertasConCoordenadas = this.alertas.filter(alerta =>
             Number.isFinite(alerta.latitud) && Number.isFinite(alerta.longitud) &&
             alerta.latitud >= -90 && alerta.latitud <= 90 &&
             alerta.longitud >= -180 && alerta.longitud <= 180
@@ -74,16 +74,10 @@ export class GeocercasComponent implements AfterViewInit {
         const marcadores = alertasConCoordenadas.map(alerta => {
             const popup = document.createElement('div');
             popup.textContent = `Reporte #${alerta.id_alerta} | Usuario #${alerta.id_usuario} | Dispositivo #${alerta.id_dispositivo} | Geocerca: ${alerta.id_geocerca_mongo ?? 'sin geocerca'}`;
-            return L.circleMarker([alerta.latitud, alerta.longitud], {
-                radius: 10,
-                color: '#991b1b',
-                fillColor: '#dc2626',
-                fillOpacity: 1,
-                weight: 3
-            }).bindPopup(popup);
+            return L.marker([alerta.latitud, alerta.longitud], { icon: pin }).bindPopup(popup);
         });
 
-        this.capaMarcadores = L.layerGroup(marcadores);
+        this.capaMarcadores = L.layerGroup(marcadores).addTo(this.map);
         this.capaPuntosRojos = L.layerGroup(
             alertasConCoordenadas.flatMap(alerta => {
                 const coordenadas: L.LatLngExpression = [alerta.latitud, alerta.longitud];
@@ -112,18 +106,8 @@ export class GeocercasComponent implements AfterViewInit {
         ]);
         this.capaCalor = (L as any).heatLayer(puntosCalor, { radius: 25 });
 
-        if (this.mostrandoMapaCalor) {
-            this.capaCalor.addTo(this.map);
-            this.capaPuntosRojos.addTo(this.map);
-        } else {
-            this.capaMarcadores.addTo(this.map);
-        }
-
         if (alertasConCoordenadas.length > 0) {
-            this.map.fitBounds(
-                L.latLngBounds(alertasConCoordenadas.map(alerta => [alerta.latitud, alerta.longitud] as [number, number])),
-                { padding: [24, 24], maxZoom: 8 }
-            );
+            this.map.fitBounds(L.latLngBounds(alertasConCoordenadas.map(alerta => [alerta.latitud, alerta.longitud] as [number, number])), { padding: [24, 24] });
         }
     }
 
@@ -140,5 +124,4 @@ export class GeocercasComponent implements AfterViewInit {
             this.capaMarcadores.addTo(this.map);
         }
     }
-
 }
