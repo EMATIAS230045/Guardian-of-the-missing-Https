@@ -64,8 +64,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         }
     }
 
-    @Output() openMap = new EventEmitter<void>();
-    openMapNow() { this.openMap.emit(); }
+    @Output() openMap = new EventEmitter<Alerta>();
+    openMapNow(alerta: Alerta) { this.openMap.emit(alerta); }
 
     // --- Opciones comunes ---
     barOptions: ChartConfiguration<'bar'>['options'] = {

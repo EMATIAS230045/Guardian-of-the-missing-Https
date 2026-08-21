@@ -87,7 +87,7 @@
     <div class="flex flex-col w-[30%] pr-6 pl-3 py-6">
         <h1 class="mb-2 font-semibold">Ultimas Alertas</h1>
         <div class="flex flex-col rounded-xl h-full p-6 shadow-[inset_0_4px_10px_rgba(61,166,147,0.5)] gap-y-4 overflow-y-auto">
-            <div *ngFor="let alerta of latestAlerts" class="flex p-4 rounded-xl bg-[#e0fff9] text-[#1f594f] font-semibold shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] cursor-pointer hover:scale-[1.025] transition-all duration-300 hover:bg-[#8fd8c9]" (click)="openMapNow()">
+            <div *ngFor="let alerta of latestAlerts" class="flex p-4 rounded-xl bg-[#e0fff9] text-[#1f594f] font-semibold shadow-[0_0px_30px_0px_rgba(44,120,106,0.4)] cursor-pointer hover:scale-[1.025] transition-all duration-300 hover:bg-[#8fd8c9]" (click)="openMapNow(alerta)">
                 <div class="w-11 h-11 bg-[#1f594f] rounded-full mr-3 shrink-0"></div>
                 <div class="flex flex-col w-full">
                     <p class="uppercase text-sm font-bold">Riesgo {{ alerta.riesgo || 'N/A' }}</p>

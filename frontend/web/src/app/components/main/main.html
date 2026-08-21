@@ -5,5 +5,5 @@
         <div class="flex-1 min-h-0"><router-outlet (activate)="onActivate($event)"></router-outlet></div>
     </div>
     <app-profile *ngIf="showProfile" (close)="showProfile = false"></app-profile>
-    <app-map *ngIf="showMap" (close)="showMap = false"></app-map>
+    <app-map *ngIf="showMap" [alerta]="alertaSeleccionada" (close)="showMap = false"></app-map>
 </div>

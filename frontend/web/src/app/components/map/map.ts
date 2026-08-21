@@ -1,5 +1,6 @@
-import { AfterViewInit, Component, EventEmitter, Output } from '@angular/core';
+import { AfterViewInit, Component, EventEmitter, Input, Output } from '@angular/core';
 import * as L from 'leaflet';
+import { Alerta } from '../../services/alerts';
 
 @Component({
     selector: 'app-map',
@@ -8,6 +9,7 @@ import * as L from 'leaflet';
 })
 
 export class MapComponent implements AfterViewInit {
+    @Input() alerta: Alerta | null = null;
     @Output() close = new EventEmitter<void>();
 
     cerrar() {
@@ -17,14 +19,17 @@ export class MapComponent implements AfterViewInit {
     private map!: L.Map;
 
     ngAfterViewInit() {
-        const pin = L.icon({
-            iconUrl: '../../public/pin.png',
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40]
+        const pin = L.divIcon({
+            className: 'alerta-marker',
+            html: '<span></span>',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
+            popupAnchor: [0, -14]
         });
 
-        this.map = L.map('map').setView([19.4326, -99.1332], 13);
+        const latitud = this.alerta?.latitud ?? 19.4326;
+        const longitud = this.alerta?.longitud ?? -99.1332;
+        this.map = L.map('map').setView([latitud, longitud], this.alerta ? 15 : 13);
 
         L.tileLayer(
             // 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
@@ -33,6 +38,10 @@ export class MapComponent implements AfterViewInit {
             { attribution: '&copy; OpenStreetMap & CartoDB' }
         ).addTo(this.map);
 
-        L.marker([19.4326, -99.1332], {icon: pin}).addTo(this.map).bindPopup('Diego').openPopup();
+        const popup = this.alerta
+            ? `Reporte #${this.alerta.id_alerta}<br>Usuario #${this.alerta.id_usuario}<br>Dispositivo #${this.alerta.id_dispositivo}<br>Estado: ${this.alerta.estado}<br>Riesgo: ${this.alerta.riesgo}<br>Geocerca: ${this.alerta.id_geocerca_mongo ?? 'sin geocerca'}<br>Coordenadas: ${latitud}, ${longitud}`
+            : 'Sin alerta seleccionada';
+
+        L.marker([latitud, longitud], { icon: pin }).addTo(this.map).bindPopup(popup).openPopup();
     }
 }

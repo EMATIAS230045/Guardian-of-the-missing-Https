@@ -5,6 +5,7 @@ import { SidebarComponent } from '../sidebar/sidebar';
 import { RouterOutlet } from '@angular/router';
 import { ProfileComponent } from '../profile/profile';
 import { MapComponent } from '../map/map';
+import { Alerta } from '../../services/alerts';
 
 @Component({
     selector: 'app-main',
@@ -15,10 +16,12 @@ import { MapComponent } from '../map/map';
 export class MainComponent {
     showProfile = false;
     showMap = false;
+    alertaSeleccionada: Alerta | null = null;
 
     onActivate(component: any) {
         if (component.openMap) {
-            component.openMap.subscribe(() => {
+            component.openMap.subscribe((alerta: Alerta) => {
+                this.alertaSeleccionada = alerta;
                 this.showMap = true;
             });
         }
