@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Optional
 
 from sqlalchemy.orm import Session
-from app.modules.mati.services.mysql.mysql import get_async_db as get_db
+from app.modules.mati.services.mysql.mysql import get_db
 
 # Importar controladores de alertas
 import app.modules.mati.controllers.alerta as alerta_controller

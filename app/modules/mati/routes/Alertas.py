@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 #funcionando como plantilla que vamos a rellenar con nuestras credenciales
 from sqlalchemy.orm import Session
 #Esta la funcion que continen las credenciales y nos ayuda a crear la conexion con mysql
-from app.modules.mati.services.mysql.mysql import get_async_db as get_db
+from app.modules.mati.services.mysql.mysql import get_db
 #Este funciona como filtro para que cuando se envie un registro hacia las alerta primero
 #compruebe si tiene la estructura del esquema
 from app.modules.mati.schemas.alerta import AlertaCreate, AlertaResponse, AlertaUpdate, AlertaPanicoCreate, AlertaCancelar

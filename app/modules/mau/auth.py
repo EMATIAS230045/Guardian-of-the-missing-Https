@@ -11,7 +11,7 @@ load_dotenv()
 # ==========================================
 CLAVE_SECRETA = os.getenv("SECRET_KEY")
 ALGORITMO = os.getenv("ALGORITHM", "HS256") # El segundo valor es por defecto por si falla
-MINUTOS_EXPIRACION_TOKEN_ACCESO = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 15)
+MINUTOS_EXPIRACION_TOKEN_ACCESO = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 15))
 
 # ==========================================
 # FUNCIONES DE GESTIÓN DE JWT

@@ -12,7 +12,14 @@ DB_NAME = "guardian_of_the_missing"
 
 client = AsyncIOMotorClient(MONGO_URI)
 db_mongo = client[DB_NAME]
-fs_bucket = AsyncIOMotorGridFSBucket(db_mongo)
+fs_bucket: Optional[AsyncIOMotorGridFSBucket] = None
+
+
+def _get_fs_bucket() -> AsyncIOMotorGridFSBucket:
+    global fs_bucket
+    if fs_bucket is None:
+        fs_bucket = AsyncIOMotorGridFSBucket(db_mongo)
+    return fs_bucket
 
 # --- HISTORIAL DE UBICACIONES ---
 async def guardar_ubicacion_gps(id_usuario: int, lat: float, lon: float, precision: Optional[float] = None) -> str:
@@ -97,7 +104,7 @@ async def crear_indices_mongo():
 
 async def guardar_audio_gridfs(id_usuario: int, file_bytes: bytes, filename: str, content_type: str) -> str:
     """Guarda un archivo de audio en fragmentos (chunks) dentro de GridFS."""
-    grid_in = fs_bucket.open_upload_stream(
+    grid_in = _get_fs_bucket().open_upload_stream(
         filename,
         metadata={
             "id_usuario": id_usuario,
@@ -112,7 +119,7 @@ async def obtener_stream_audio_gridfs(file_id: str):
     """Abre un stream de descarga desde GridFS dado un ID único de archivo."""
     try:
         object_id = ObjectId(file_id)
-        grid_out = await fs_bucket.open_download_stream(object_id)
+        grid_out = await _get_fs_bucket().open_download_stream(object_id)
         return grid_out
     except Exception:
         return None

@@ -1,7 +1,7 @@
 # routes/usuario_routes.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.modules.mati.services.mysql.mysql import get_async_db as get_mysql_session
+from app.modules.mati.services.mysql.mysql import get_db as get_mysql_session
 from app.modules.mati.schemas.usuario_schemas import ConfigurarPinInput
 import app.modules.mati.controllers.usuario_controller as usuario_controller
 

@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 # Importar el generador de sesiones de MySQL
-from app.modules.mati.services.mysql.mysql import get_async_db as get_db  # Ajusta el import según tu estructura (ej: get_mysql_db)
+from app.modules.mati.services.mysql.mysql import get_db
 
 # Importar esquemas y controlador
 from app.modules.mati.schemas.dispositivo import DispositivoCreate, DispositivoOut, DispositivoUpdate

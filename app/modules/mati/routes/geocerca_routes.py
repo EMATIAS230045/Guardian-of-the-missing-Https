@@ -23,7 +23,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from sqlalchemy.orm import Session
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.modules.mati.services.mysql.mysql import get_async_db as get_mysql_session
+from app.modules.mati.services.mysql.mysql import get_db as get_mysql_session
 from app.modules.mati.services.mongo_config import get_database
 from app.modules.mati.services.orquestador.orquestador_alertas import evaluar_y_procesar_alerta
 from app.modules.mati.controllers import geocerca_controller as controller
