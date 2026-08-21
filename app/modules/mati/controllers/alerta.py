@@ -8,6 +8,7 @@ from app.database.models import Usuario
 from app.modules.mati.schemas.alerta import AlertaCreate, AlertaUpdate, AlertaPanicoCreate
 from app.modules.mati.services.security import verificar_pin
 from app.modules.mati.services.worker_alertas import cancelar_worker_alerta 
+from app.utils.websocket_manager import manager
 
 # CREAR
 async def crear_alerta(db: AsyncSession, alerta_data: AlertaCreate) -> Alerta:
@@ -15,6 +16,10 @@ async def crear_alerta(db: AsyncSession, alerta_data: AlertaCreate) -> Alerta:
     db.add(nueva_alerta)
     await db.commit()
     await db.refresh(nueva_alerta)
+    await manager.broadcast_all({
+        "event": "NEW_ALERT",
+        "data": AlertaResponse.model_validate(nueva_alerta).model_dump(mode="json")
+    })
     return nueva_alerta
 
 # OBTENER TODAS (Con paginación opcional)
@@ -74,6 +79,10 @@ async def crear_alerta_panico(db: AsyncSession, datos: AlertaPanicoCreate):
     db.add(nueva_alerta)
     await db.commit()
     await db.refresh(nueva_alerta)
+    await manager.broadcast_all({
+        "event": "NEW_ALERT",
+        "data": AlertaResponse.model_validate(nueva_alerta).model_dump(mode="json")
+    })
     
     return nueva_alerta
 

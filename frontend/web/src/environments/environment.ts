@@ -1,6 +1,6 @@
 // Entorno de desarrollo local
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:8000',
-    wsUrl: 'ws://localhost:8000'
+    apiUrl: 'https://guardian-api-mmxu.onrender.com',
+    wsUrl: 'wss://guardian-api-mmxu.onrender.com'
 };
