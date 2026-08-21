@@ -1,11 +1,9 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Output, ViewChild, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import * as L from 'leaflet';
 import 'leaflet.heat';
 import { AlertsService, Alerta } from '../../services/alerts';
 import { UserService } from '../../services/user';
-import { WebsocketService } from '../../services/websocket.service';
-import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'app-geocercas',
@@ -13,7 +11,7 @@ import { Subscription } from 'rxjs';
     templateUrl: './geocercas.html'
 })
 
-export class GeocercasComponent implements AfterViewInit, OnDestroy {
+export class GeocercasComponent implements AfterViewInit {
     @Output() close = new EventEmitter<void>();
     @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLDivElement>;
 
@@ -23,8 +21,6 @@ export class GeocercasComponent implements AfterViewInit, OnDestroy {
     private capaPuntosRojos!: L.LayerGroup;
     private alertasService = inject(AlertsService);
     private userService = inject(UserService);
-    private websocket = inject(WebsocketService);
-    private wsSub?: Subscription;
     private pin!: L.DivIcon;
 
     mostrandoMapaCalor = false;
@@ -49,14 +45,6 @@ export class GeocercasComponent implements AfterViewInit, OnDestroy {
         ).addTo(this.map);
 
         this.cargarAlertas();
-        this.wsSub = this.websocket.alerts$.subscribe((alerta: Alerta) => {
-            const usuarioActual = this.userService.getUsuarioActual();
-            if (usuarioActual && usuarioActual.role !== 'admin' && alerta.id_usuario !== usuarioActual.id) return;
-            if (this.alertas.some(alertaExistente => alertaExistente.id_alerta === alerta.id_alerta)) return;
-
-            this.alertas = [alerta, ...this.alertas];
-            this.crearCapas();
-        });
     }
 
     private cargarAlertas() {
@@ -153,8 +141,4 @@ export class GeocercasComponent implements AfterViewInit, OnDestroy {
         }
     }
 
-    ngOnDestroy() {
-        this.wsSub?.unsubscribe();
-        this.map?.remove();
-    }
 }
