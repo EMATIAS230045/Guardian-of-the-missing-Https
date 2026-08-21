@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNavBar from './BottomNavBar';
-import { UserService } from '../services/userService';
+import { AlertaApi, UserService } from '../services/userService';
 import * as Location from 'expo-location';
 
 import MapView, { Marker, Circle, MapPressEvent } from 'react-native-maps';
@@ -19,6 +19,7 @@ export default function Geofences() {
     const [regionActual, setRegionActual] = useState({ latitude: 20.393, longitude: -98.203, latitudeDelta: 0.05, longitudeDelta: 0.05 });
 
     const [geocercasGuardadas, setGeocercasGuardadas] = useState<any[]>([]);
+    const [alertas, setAlertas] = useState<AlertaApi[]>([]);
     const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
@@ -33,7 +34,8 @@ export default function Geofences() {
                     longitudeDelta: 0.01,
                 });
             }
-            cargarGeocercas();
+            await cargarGeocercas();
+            await cargarAlertas();
         };
         iniciarUbicacion();
     }, []);
@@ -50,6 +52,23 @@ export default function Geofences() {
             console.error('Error cargando geocercas:', e);
         } finally {
             setCargando(false);
+        }
+    };
+
+    const cargarAlertas = async () => {
+        try {
+            const data = await UserService.apiGetAlertas();
+            const usuarioActual = UserService.getUsuarioActual();
+            const reportesVisibles = usuarioActual?.role === 'admin'
+                ? data
+                : data.filter(alerta => !usuarioActual || alerta.id_usuario === usuarioActual.id);
+            setAlertas(reportesVisibles.filter(alerta =>
+                Number.isFinite(alerta.latitud) && Number.isFinite(alerta.longitud) &&
+                alerta.latitud >= -90 && alerta.latitud <= 90 &&
+                alerta.longitud >= -180 && alerta.longitud <= 180
+            ));
+        } catch (e: any) {
+            console.error('Error cargando reportes:', e);
         }
     };
 
@@ -92,7 +111,7 @@ export default function Geofences() {
             </View>
             {/* Contenedor del mapa */}
             <View className="flex-1 mx-4 my-4 rounded-2xl overflow-hidden shadow-sm">
-                {cargando && <Text className="absolute top-4 left-4 z-10 font-bold text-slate-900 bg-white/70 px-2 py-1 rounded">Cargando polígonos...</Text>}
+                {cargando && <Text className="absolute top-4 left-4 z-10 font-bold text-slate-900 bg-white/70 px-2 py-1 rounded">Cargando geocercas y reportes...</Text>}
                 <MapView 
                     style={{ flex: 1 }} 
                     region={regionActual}
@@ -100,6 +119,27 @@ export default function Geofences() {
                     onPress={manejarToqueMapa}
                 >
                     {pin && <Marker coordinate={pin} title="Ubicación" />}
+
+                    {alertas.map(alerta => {
+                        const center = { latitude: alerta.latitud, longitude: alerta.longitud };
+                        return (
+                            <React.Fragment key={`alerta-${alerta.id_alerta}`}>
+                                <Circle
+                                    center={center}
+                                    radius={500}
+                                    fillColor="rgba(239, 68, 68, 0.22)"
+                                    strokeColor="#dc2626"
+                                    strokeWidth={3}
+                                />
+                                <Marker
+                                    coordinate={center}
+                                    pinColor="#dc2626"
+                                    title={`Reporte #${alerta.id_alerta}`}
+                                    description={`Usuario #${alerta.id_usuario} | Dispositivo #${alerta.id_dispositivo} | Geocerca: ${alerta.id_geocerca_mongo || 'sin geocerca'}`}
+                                />
+                            </React.Fragment>
+                        );
+                    })}
                     
                     {/* Renderizar circulo en dibujo actual */}
                     {puntos.length > 0 && ( <Circle center={puntos[0]} radius={150} fillColor="rgba(26, 143, 111, 0.25)" strokeColor="#1a8f6f" strokeWidth={2} /> )}

@@ -1,6 +1,6 @@
 import * as SecureStore from 'expo-secure-store';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.71:8000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://guardian-api-mmxu.onrender.com';
 
 export const setAuthToken = async (token: string) => {
     await SecureStore.setItemAsync('access_token', token);

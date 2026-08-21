@@ -103,6 +103,10 @@ export const UserService = {
         return await apiFetch('/geocercas/');
     },
 
+    async apiGetAlertas(): Promise<AlertaApi[]> {
+        return await apiFetch('/alertas/?skip=0&limit=1000');
+    },
+
     async apiGuardarGeocerca(puntoCentral: any, radioMetros: number = 100): Promise<any> {
         const usuarioActual = this.getUsuarioActual();
         if (!usuarioActual) throw new Error("Sesión no iniciada");
@@ -123,3 +127,15 @@ export const UserService = {
         });
     }
 };
+
+export interface AlertaApi {
+    id_alerta: number;
+    id_usuario: number;
+    id_dispositivo: number;
+    latitud: number;
+    longitud: number;
+    riesgo: string;
+    estado: string;
+    id_geocerca_mongo: string | null;
+    fecha_hora: string | null;
+}
