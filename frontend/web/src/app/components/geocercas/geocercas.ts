@@ -18,6 +18,7 @@ export class GeocercasComponent implements AfterViewInit {
     private map!: L.Map;
     private capaMarcadores!: L.LayerGroup;
     private capaCalor: any;
+    private capaPuntosRojos!: L.LayerGroup;
     private alertasService = inject(AlertsService);
     private userService = inject(UserService);
 
@@ -76,6 +77,27 @@ export class GeocercasComponent implements AfterViewInit {
         });
 
         this.capaMarcadores = L.layerGroup(marcadores).addTo(this.map);
+        this.capaPuntosRojos = L.layerGroup(
+            alertasConCoordenadas.flatMap(alerta => {
+                const coordenadas: L.LatLngExpression = [alerta.latitud, alerta.longitud];
+                return [
+                    L.circle(coordenadas, {
+                        radius: 100,
+                        color: '#dc2626',
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.14,
+                        weight: 2
+                    }),
+                    L.circleMarker(coordenadas, {
+                        radius: 9,
+                        color: '#991b1b',
+                        fillColor: '#dc2626',
+                        fillOpacity: 1,
+                        weight: 3
+                    }).bindTooltip(`Reporte #${alerta.id_alerta}`, { direction: 'top' })
+                ];
+            })
+        );
         const puntosCalor: [number, number, number][] = alertasConCoordenadas.map(alerta => [
             alerta.latitud,
             alerta.longitud,
@@ -94,8 +116,10 @@ export class GeocercasComponent implements AfterViewInit {
         if (this.mostrandoMapaCalor) {
             this.map.removeLayer(this.capaMarcadores);
             this.capaCalor.addTo(this.map);
+            this.capaPuntosRojos.addTo(this.map);
         } else {
             this.map.removeLayer(this.capaCalor);
+            this.map.removeLayer(this.capaPuntosRojos);
             this.capaMarcadores.addTo(this.map);
         }
     }
