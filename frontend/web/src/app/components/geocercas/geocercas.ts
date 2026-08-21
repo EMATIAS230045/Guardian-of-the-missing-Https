@@ -21,7 +21,6 @@ export class GeocercasComponent implements AfterViewInit {
     private capaPuntosRojos!: L.LayerGroup;
     private alertasService = inject(AlertsService);
     private userService = inject(UserService);
-    private pin!: L.DivIcon;
 
     mostrandoMapaCalor = false;
     alertas: Alerta[] = [];
@@ -29,14 +28,6 @@ export class GeocercasComponent implements AfterViewInit {
     errorCarga = false;
 
     ngAfterViewInit() {
-        this.pin = L.divIcon({
-            className: 'reporte-marker',
-            html: '<span></span>',
-            iconSize: [22, 22],
-            iconAnchor: [11, 11],
-            popupAnchor: [0, -14]
-        });
-
         this.map = L.map(this.mapContainer.nativeElement).setView([19.4326, -99.1332], 13);
 
         L.tileLayer(
@@ -83,7 +74,13 @@ export class GeocercasComponent implements AfterViewInit {
         const marcadores = alertasConCoordenadas.map(alerta => {
             const popup = document.createElement('div');
             popup.textContent = `Reporte #${alerta.id_alerta} | Usuario #${alerta.id_usuario} | Dispositivo #${alerta.id_dispositivo} | Geocerca: ${alerta.id_geocerca_mongo ?? 'sin geocerca'}`;
-            return L.marker([alerta.latitud, alerta.longitud], { icon: this.pin }).bindPopup(popup);
+            return L.circleMarker([alerta.latitud, alerta.longitud], {
+                radius: 10,
+                color: '#991b1b',
+                fillColor: '#dc2626',
+                fillOpacity: 1,
+                weight: 3
+            }).bindPopup(popup);
         });
 
         this.capaMarcadores = L.layerGroup(marcadores);
@@ -123,7 +120,10 @@ export class GeocercasComponent implements AfterViewInit {
         }
 
         if (alertasConCoordenadas.length > 0) {
-            this.map.fitBounds(L.latLngBounds(alertasConCoordenadas.map(alerta => [alerta.latitud, alerta.longitud] as [number, number])), { padding: [24, 24] });
+            this.map.fitBounds(
+                L.latLngBounds(alertasConCoordenadas.map(alerta => [alerta.latitud, alerta.longitud] as [number, number])),
+                { padding: [24, 24], maxZoom: 8 }
+            );
         }
     }
 
